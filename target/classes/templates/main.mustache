@@ -1,0 +1,25 @@
+<html>
+<!--  -->
+<body>
+    <div>
+        <form method="post">  <!-- Форма для ввода текста -->
+            <input type="text" name="text" placeholder="Введите сообщение" /> <!-- Текстовое поле №1 -->
+            <input type="text" name="tag" placeholder="Введите tag" /> <!-- Текстовое поле №2 -->
+            <button type="submit">Добавить</button> <!-- кнопка -->
+        </form>
+    </div>
+    <div>Список сообщений (он же List)</div>
+    <form method="post" action="filter">
+        <input type="text" name="filter">
+        <button type="submit">Найти</button>
+    </form>
+    {{#messages}}
+        <div>
+            <b>{{id}}</b> <!-- выделение жирным -->
+            <span>{{text}}</span> <!-- является основным строковым контейнером для фразового контента -->
+            <i>{{tag}}</i> <!-- Устанавливает курсивное начертание шрифта -->
+        </div>
+    {{/messages}}
+</body>
+
+</html>
