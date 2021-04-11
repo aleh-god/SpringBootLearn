@@ -5,24 +5,30 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-@Entity // This tells Hibernate to make a table out of this class
+@Entity
 public class Message {
-    // Указываем на ключ в таблице БД. И передаем базе самой решать каким будет этот ключ
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.AUTO)     // Указываем на ключ в таблице БД. И передаем базе самой решать каким будет этот ключ
     private Integer id;
-
     // Hibernate automatically translates the entity into a table.
-    private String test;
+    private String text;
     private String tag;
 
     public Message() {
         // Пустой конструктор для работы фреймворка
     }
 
-    public Message(String test, String tag) {
-        this.test = test;
+    public Message(String text, String tag) {
+        this.text = text;
         this.tag = tag;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
     }
 
     public Integer getId() {
@@ -31,14 +37,6 @@ public class Message {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getTest() {
-        return test;
-    }
-
-    public void setTest(String test) {
-        this.test = test;
     }
 
     public String getTag() {
