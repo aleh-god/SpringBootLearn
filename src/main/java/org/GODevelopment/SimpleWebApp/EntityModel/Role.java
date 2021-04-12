@@ -1,5 +1,13 @@
 package org.GODevelopment.SimpleWebApp.EntityModel;
 
-public enum Role {
+import org.springframework.security.core.GrantedAuthority;
+
+// Привязываем наши роли к ролям Spring.Security
+public enum Role implements GrantedAuthority {
     USER;
+
+    @Override
+    public String getAuthority() {
+        return name(); // метод класса Enum, возвращает строковое представление значения Role
+    }
 }

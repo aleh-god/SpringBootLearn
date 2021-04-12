@@ -1,14 +1,15 @@
 package org.GODevelopment.SimpleWebApp.Controllers;
 
 import org.GODevelopment.SimpleWebApp.EntityModel.Message;
+import org.GODevelopment.SimpleWebApp.EntityModel.User;
 import org.GODevelopment.SimpleWebApp.Repository.MessageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
 import java.util.Map;
 
 @Controller // This means that this class is a Controller
@@ -18,7 +19,8 @@ public class MainController {
     private MessageRepo messageRepo;
 
     @GetMapping("/")
-    public String getGreeting(Map<String, Object> model) {
+    public String getGreeting(
+            Map<String, Object> model) {
         return "greeting";
     }
 
@@ -30,11 +32,13 @@ public class MainController {
     }
 
     @PostMapping("/main") // <form method="post">
-    public String addMessage(@RequestParam String text, //  <input type="text" name="text"
-                             @RequestParam String tag,  //  <input type="text" name="tag"
-                             Map<String, Object> model) {
+    public String addMessage(
+            @AuthenticationPrincipal User user,
+            @RequestParam String text, //  <input type="text" name="text"
+            @RequestParam String tag,  //  <input type="text" name="tag"
+            Map<String, Object> model) {
 
-        Message message = new Message(text, tag);
+        Message message = new Message(text, tag, user);
         messageRepo.save(message);
 
         Iterable<Message> allMessages = messageRepo.findAll();
@@ -45,7 +49,7 @@ public class MainController {
 
     @PostMapping("filter") // <form method="post" action="filter">
     public String getFilterMessages(@RequestParam String filter, // <input type="text" name="filter"
-                         Map<String,Object> model) {
+                                    Map<String,Object> model) {
         Iterable<Message> messages;
 
         if (filter !=null && !filter.isEmpty()) {

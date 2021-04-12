@@ -22,12 +22,13 @@
     <button type="submit">Найти</button>
 </form>
 <div>Список сообщений:</div>
-{{#messages}}
-    <div>
-        <b>{{id}}</b>
-        <span>{{text}}</span>
-        <i>{{tag}}</i>
-    </div>
-{{/messages}}
+    {{#messages}}
+        <div>
+            <b>{{id}}</b>
+            <span>{{text}}</span>
+            <i>{{tag}}</i>
+            <strong>{{nameAuthor}}</strong>
+        </div>
+    {{/messages}}
 </body>
 </html>

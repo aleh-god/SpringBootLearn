@@ -1,19 +1,13 @@
 package org.GODevelopment.SimpleWebApp.ConfigFiles;
 
+import org.GODevelopment.SimpleWebApp.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-
-import javax.sql.DataSource;
 
 /**
  * The configure(HttpSecurity) method defines which URL paths should be secured and which should not. Specifically, the / and /home paths are configured to not require any authentication. All other paths must be authenticated.
@@ -23,10 +17,9 @@ import javax.sql.DataSource;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    // WebSecurity нужен доступ к нашей БД
+    // Служба, которая предоставляет учетные записи
     @Autowired
-    private DataSource dataSource;
+    private UserService userService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -43,7 +36,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .permitAll(); // Форма логаута доступна для всех
     }
 
-    // Пользователей берем из БД
+    // Берем пользователей через userDetailsService()
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userService)
+                .passwordEncoder // Пароли хранятся в БД в зашифрованном виде. Дешифруем.
+                (NoOpPasswordEncoder.getInstance()); // Устаревший, нужен для отладки, будет заменен
+    }
+
+    /**
+    * jdbcAuthentication - Пользователей берем из БД
+     *
+     // WebSecurity нужен доступ к нашей БД
+     @Autowired
+     private DataSource dataSource;
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.jdbcAuthentication()
@@ -51,13 +58,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .passwordEncoder // Пароли хранятся в БД в зашифрованном виде. Дешифруем.
                         (NoOpPasswordEncoder.getInstance()) // Устаревший, нужен для отладки, будет заменен
                 .usersByUsernameQuery("select username, password, active from r_user where username=?") // auth ищет пользователя в БД по его имени. Используется четкий набор полей username, password, active
+                  // Этот запрос позволяет Спрингу получить список пользователей с их ролями.
+                 // Получаем имя и роль, объединив две таблицы, через равенство id = user_id, где username равно запросу Спринга
                 .authoritiesByUsernameQuery("select u.username, ur.roles from r_user u inner join user_role ur on u.id = ur.user_id where u.username=?");
-                // Этот запрос позволяет Спрингу получить список пользователей с их ролями.
-        //      // Получаем имя и роль, объединив две таблицы, через равенство id = user_id, где username равно запросу Спринга
     }
 
-    /**
-     * Нужен только при отладке приложения. Создает пользователя по умолчанию. будет удалён когда создадим User
+     * withDefaultPasswordEncoder - Нужен только при отладке приложения. Создает пользователя по умолчанию. будет удалён когда создадим User
     @Bean
     @Override
     public UserDetailsService userDetailsService() {
