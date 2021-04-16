@@ -12,10 +12,12 @@ import java.util.Set;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)     // Указываем на ключ в таблице БД. И передаем базе самой решать каким будет этот ключ
-    private Integer id;
+    private Long id;
 
-    private String username;
+    private String username; // LeetCode ID
     private String password;
+    private String email;
+    private String emailActivationCode;
     private boolean active;
 
 
@@ -24,11 +26,15 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-    public Integer getId() {
+    public boolean isAdmin() {
+        return roles.contains(Role.ADMIN); // Есть ли в списке ролей админ
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -62,6 +68,22 @@ public class User implements UserDetails {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmailActivationCode() {
+        return emailActivationCode;
+    }
+
+    public void setEmailActivationCode(String emailActivationCode) {
+        this.emailActivationCode = emailActivationCode;
     }
 
     // Методы интерфейса UserDetails.Security

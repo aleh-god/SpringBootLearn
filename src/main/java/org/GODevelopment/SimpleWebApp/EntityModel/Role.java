@@ -4,7 +4,8 @@ import org.springframework.security.core.GrantedAuthority;
 
 // Привязываем наши роли к ролям Spring.Security
 public enum Role implements GrantedAuthority {
-    USER;
+    USER,
+    ADMIN;
 
     @Override
     public String getAuthority() {

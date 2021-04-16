@@ -10,6 +10,7 @@ public class Message {
     // Hibernate automatically translates the entity into a table.
     private String text;
     private String tag;
+    private String filename;
 
     // Указываем, как автор должен сохраняться в БД.
     @ManyToOne(fetch = FetchType.EAGER) // Одному пользователю соотв множество сообщений. У сообщения может быть только уникальный автор из другого списка.
@@ -60,5 +61,13 @@ public class Message {
 
     public String getNameAuthor() {
         return author.getUsername();
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 }
