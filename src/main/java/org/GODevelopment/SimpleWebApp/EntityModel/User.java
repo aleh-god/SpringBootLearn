@@ -1,9 +1,12 @@
 package org.GODevelopment.SimpleWebApp.EntityModel;
 
+import org.hibernate.validator.constraints.Length;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.util.Collection;
 import java.util.Set;
 
@@ -14,9 +17,20 @@ public class User implements UserDetails {
     @GeneratedValue(strategy= GenerationType.AUTO)     // Указываем на ключ в таблице БД. И передаем базе самой решать каким будет этот ключ
     private Long id;
 
+    // Hibernate automatically translates the entity into a table.
+    @NotBlank(message = "Username can be empty")
     private String username; // LeetCode ID
+    @NotBlank(message = "Password can be empty")
     private String password;
+
+    @Transient // Не добавляем в БД Нужен только для сверки подтверждения пароля
+    @NotBlank(message = "Password confirmation can be empty")
+    private String passwordConfirm;
+
+    @NotBlank(message = "Email can be empty")
+    @Email(message = "Email is not correct")
     private String email;
+
     private String emailActivationCode;
     private boolean active;
 
@@ -113,4 +127,11 @@ public class User implements UserDetails {
         return getRoles(); // Подставляем наше поле
     }
 
+    public String getPasswordConfirm() {
+        return passwordConfirm;
+    }
+
+    public void setPasswordConfirm(String passwordConfirm) {
+        this.passwordConfirm = passwordConfirm;
+    }
 }

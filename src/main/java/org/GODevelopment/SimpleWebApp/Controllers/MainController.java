@@ -8,15 +8,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.naming.Binding;
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller // This means that this class is a Controller
 public class MainController {
@@ -53,29 +58,38 @@ public class MainController {
     @PostMapping("/main") // <form method="post">
     public String addMessage(
             @AuthenticationPrincipal User user,
-            @RequestParam String text, //  <input type="text" name="text"
-            @RequestParam String tag,  //  <input type="text" name="tag"
-            @RequestParam("file") MultipartFile file,
-            Model model) throws IOException {
+            @Valid Message message,
+            BindingResult bindingResult,
+            Model model,
+            @RequestParam("file") MultipartFile file) throws IOException {
+        message.setAuthor(user);
 
-        Message message = new Message(text, tag, user);
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
+            model.mergeAttributes(errorsMap);
+            model.addAttribute("message", message);
 
-        if (file != null && file.getOriginalFilename().isEmpty()) { // Проверяем наличие аттач в реквесте
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) { // проверяем наличие папки назначения, если ее нет, то создаем
-                uploadDir.mkdir();
+        } else {
+
+            if (file != null && !file.getOriginalFilename().isEmpty()) { // Проверяем наличие аттач в реквесте
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) { // проверяем наличие папки назначения, если ее нет, то создаем
+                    uploadDir.mkdir();
+                }
+
+                //  universally unique identifier - для исключения коллизий хранения
+                String uuidFile = UUID.randomUUID().toString(); // Static factory to retrieve a type 4 (cryptographically strong) UUID.
+
+                String resultFileName = uuidFile + "." + file.getOriginalFilename(); // Return the original filename in the client's filesystem.
+                file.transferTo(new File(uploadPath + "/" + resultFileName)); // Transfer the received file to the given destination file.
+
+                message.setFilename(resultFileName);
             }
 
-            //  universally unique identifier - для исключения коллизий хранения
-            String uuidFile = UUID.randomUUID().toString(); // Static factory to retrieve a type 4 (cryptographically strong) UUID.
+            model.addAttribute("message", null);
 
-            String resultFileName = uuidFile + "." + file.getOriginalFilename(); // Return the original filename in the client's filesystem.
-            file.transferTo(new File(uploadPath + "/" + resultFileName)); // Transfer the received file to the given destination file.
-
-            message.setFilename(resultFileName);
+            messageRepo.save(message);
         }
-
-        messageRepo.save(message);
 
         Iterable<Message> allMessages = messageRepo.findAll();
         model.addAttribute("messages", allMessages);

@@ -1,14 +1,22 @@
 package org.GODevelopment.SimpleWebApp.EntityModel;
 
+import org.hibernate.validator.constraints.Length;
+import org.springframework.validation.annotation.Validated;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 public class Message {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)     // Указываем на ключ в таблице БД. И передаем базе самой решать каким будет этот ключ
-    private Integer id;
+    private long id;
+
     // Hibernate automatically translates the entity into a table.
+    @NotBlank(message = "Please, fill the message")
+    @Length(max = 2048, message = "Message too long")
     private String text;
+    @Length(max = 255, message = "tag too long")
     private String tag;
     private String filename;
 
@@ -35,7 +43,7 @@ public class Message {
         return text;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 
@@ -59,7 +67,7 @@ public class Message {
         this.author = author;
     }
 
-    public String getNameAuthor() {
+    public String getAuthorName() {
         return author.getUsername();
     }
 
