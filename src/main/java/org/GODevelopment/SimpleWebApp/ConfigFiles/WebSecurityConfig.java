@@ -2,12 +2,16 @@ package org.GODevelopment.SimpleWebApp.ConfigFiles;
 
 import org.GODevelopment.SimpleWebApp.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * The configure(HttpSecurity) method defines which URL paths should be secured and which should not. Specifically, the / and /home paths are configured to not require any authentication. All other paths must be authenticated.
@@ -16,16 +20,26 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // Служба, которая предоставляет учетные записи
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Bean // We'll start by defining the simple BCryptPasswordEncoder as a bean in our configuration:
+    public PasswordEncoder getPasswordEncoder() {
+        return new BCryptPasswordEncoder(8); // There are a few encoding mechanisms supported by Spring Security – and for the article, we'll use BCrypt, as it's usually the best solution available.
+        // Also, be aware that the BCrypt algorithm generates a String of length 60, so we need to make sure that the password will be stored in a column that can accommodate it.
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http    // На вход принимаем http-запрос
                 .authorizeRequests()
-                    .antMatchers("/", "/registration").permitAll() // Перечень адрессов, к которым доступ разрешен
+                    .antMatchers("/", "/registration", "/static/**", "/activate/*").permitAll() // Перечень адрессов, к которым доступ разрешен без авторизации. * осзначает один сегмент
                     .anyRequest().authenticated() // Остальные адресса по доступу только для авторизированных пользователей
                 .and()
                     .formLogin()
@@ -41,7 +55,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userService)
                 .passwordEncoder // Пароли хранятся в БД в зашифрованном виде. Дешифруем.
-                (NoOpPasswordEncoder.getInstance()); // Устаревший, нужен для отладки, будет заменен
+                (passwordEncoder);
+                // (NoOpPasswordEncoder.getInstance()); Устаревший, нужен для отладки, будет заменен
     }
 
     /**

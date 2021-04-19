@@ -8,4 +8,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
     // Declare query methods on the interface.
     // Имя метода составляется по правилам Спринга, он его превращает в запрос в БД
     User findByUsername(String username);
+
+    User findByEmailActivationCode(String code);
+
 }
